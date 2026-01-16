@@ -30,6 +30,20 @@ docker run -d --name o365 \
   --restart unless-stopped \
   o365:latest
 ```
+## DockerHub 拉取
+```bash
+docker pull datout/o365:latest
+
+docker rm -f o365 2>/dev/null || true
+rm -rf /root/o365-data
+mkdir -p /root/o365-data
+
+docker run -d --name o365 \
+  -p 9527:9527 \
+  -v /root/o365-data:/data \
+  --restart unless-stopped \
+  datout/o365:latest
+```
 ---
 ## 预览
 - **首页** 
