@@ -29,7 +29,7 @@ docker run -d --name o365 \
   -v /root/o365-data:/data \
   --restart unless-stopped \
   o365:latest
-
+```
 ---
 
 ## Microsoft Graph 应用权限（Application permissions）
