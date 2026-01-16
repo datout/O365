@@ -1,0 +1,23 @@
+# Keep Docker build context small & avoid leaking repo metadata
+.git
+.github
+.idea
+.vscode
+*.iml
+
+# Maven
+**/target
+
+# Runtime data / local state
+**/data
+**/*.db
+**/*.mv.db
+**/*.trace.db
+
+# Logs
+**/*.log
+
+# Archives
+*.zip
+*.tar
+*.tar.gz

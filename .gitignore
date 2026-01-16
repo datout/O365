@@ -1,0 +1,16 @@
+# Maven
+/target/
+
+# Runtime data
+/data/
+**/*.db
+**/*.mv.db
+**/*.trace.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
