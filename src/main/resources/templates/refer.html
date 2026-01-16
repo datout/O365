@@ -82,12 +82,24 @@
 
       <div class="gh-field">
         <label for="password">密码</label>
-        <input id="password" name="password" type="password" autocomplete="new-password" placeholder="至少 8 位，且包含字母 + 数字">
+        <div class="gh-pw-wrap">
+          <input id="password" name="password" type="password" autocomplete="new-password" placeholder="至少 8 位，且包含字母 + 数字">
+          <button type="button" class="gh-pw-toggle" data-target="password" aria-label="显示密码" title="显示密码">
+            <svg class="eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 5-9 7s4 7 9 7 9-5 9-7-4-7-9-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5 4.5 3 21 19.5 19.5 21l-2.2-2.2A10.9 10.9 0 0 1 12 20c-5 0-9-5-9-7 0-1.1 1-3.1 2.8-4.8L3 4.5Zm5.1 5.1A4 4 0 0 0 12 16a4 4 0 0 0 2.4-.8l-1.5-1.5A2.5 2.5 0 0 1 10.3 11l-2.2-2.2Zm4-4.6c5 0 9 5 9 7 0 .9-.7 2.4-1.9 3.8l-3-3A4 4 0 0 0 8.2 6.8l-1.6-1.6c1.5-.8 3.3-1.2 5.4-1.2Z"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="gh-field">
         <label for="password2">确认密码</label>
-        <input id="password2" name="password2" type="password" autocomplete="new-password" placeholder="再次输入密码">
+        <div class="gh-pw-wrap">
+          <input id="password2" name="password2" type="password" autocomplete="new-password" placeholder="再次输入密码">
+          <button type="button" class="gh-pw-toggle" data-target="password2" aria-label="显示密码" title="显示密码">
+            <svg class="eye" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 5-9 7s4 7 9 7 9-5 9-7-4-7-9-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
+            <svg class="eye-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4.5 4.5 3 21 19.5 19.5 21l-2.2-2.2A10.9 10.9 0 0 1 12 20c-5 0-9-5-9-7 0-1.1 1-3.1 2.8-4.8L3 4.5Zm5.1 5.1A4 4 0 0 0 12 16a4 4 0 0 0 2.4-.8l-1.5-1.5A2.5 2.5 0 0 1 10.3 11l-2.2-2.2Zm4-4.6c5 0 9 5 9 7 0 .9-.7 2.4-1.9 3.8l-3-3A4 4 0 0 0 8.2 6.8l-1.6-1.6c1.5-.8 3.3-1.2 5.4-1.2Z"/></svg>
+          </button>
+        </div>
       </div>
 
       <div class="gh-actions">
@@ -324,6 +336,24 @@
       // init
       updatePreview();
       fetchInviteSuffix();
+
+      // password visibility toggle (small eye button)
+      $(document).on('mousedown', '.gh-pw-toggle', function(e){
+        e.preventDefault(); // keep focus in input
+      });
+      $(document).on('click', '.gh-pw-toggle', function(){
+        var $btn = $(this);
+        var target = $btn.attr('data-target');
+        if(!target) return;
+        var $input = $('#' + target);
+        if(!$input.length) return;
+        var isPwd = ($input.attr('type') || 'password') === 'password';
+        $input.attr('type', isPwd ? 'text' : 'password');
+        $btn.toggleClass('is-on', isPwd);
+        $btn.attr('aria-label', isPwd ? '隐藏密码' : '显示密码');
+        $btn.attr('title', isPwd ? '隐藏密码' : '显示密码');
+        $input.trigger('focus');
+      });
     });
   </script>
 </body>
