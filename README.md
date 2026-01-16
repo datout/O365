@@ -15,7 +15,6 @@
 - **稳定性与交互修复**
   - 优化 assignLicense 等错误输出与前端提示
 
-
 ---
 
 ## Docker 本地构建（推荐）
@@ -30,21 +29,36 @@ docker run -d --name o365 \
   --restart unless-stopped \
   o365:latest
 ```
-## DockerHub 拉取
+
+## Docker Hub 直接部署（无需本地构建）
+
+> 已发布 multi-arch（linux/amd64 + linux/arm64），Oracle ARM/AMD 服务器都可直接 pull。
+
 ```bash
 docker pull datout/o365:latest
 
-docker rm -f o365 2>/dev/null || true
-rm -rf /root/o365-data
 mkdir -p /root/o365-data
-
+docker rm -f o365 2>/dev/null || true
 docker run -d --name o365 \
   -p 9527:9527 \
   -v /root/o365-data:/data \
   --restart unless-stopped \
   datout/o365:latest
 ```
+
+## GitHub Actions 自动发布镜像（可选）
+
+仓库已内置 workflow：`.github/workflows/docker-publish.yml`。
+
+- 推送到 `master` 分支：自动发布 `datout/o365:latest`
+- 打 tag（例如 `v1.0.0`）：自动发布 `datout/o365:v1.0.0`（并保留 `latest` 仅在 master 发布）
+
+你需要在 GitHub 仓库 Secrets 中配置：
+- `DOCKERHUB_USERNAME`
+- `DOCKERHUB_TOKEN`（Docker Hub Access Token）
+
 ---
+
 ## 预览
 - **首页** 
 ![alt 首页](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3811.png)
@@ -74,6 +88,7 @@ Reports.Read.All
 Sites.FullControl.All
 
 Domain.ReadWrite.All
+
 ## 致谢
 
 Upstream：https://github.com/vanyouseea/o365
