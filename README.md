@@ -38,9 +38,10 @@ docker run -d --name o365 \
 ![alt 邀请注册](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3812.png)
 - **注册页** 
 ![alt 注册](https://github.com/datout/O365/blob/79aa493a34bcb82811d96dae08754e81e0189e75/pic/_901.png)
+
 ## Microsoft Graph 应用权限（Application permissions）
 
-## 为保证全部功能可用，建议授予并执行 Admin consent：
+为保证全部功能可用，建议授予并执行 Admin consent：
 
 Application.ReadWrite.All
 
@@ -59,3 +60,6 @@ Reports.Read.All
 Sites.FullControl.All
 
 Domain.ReadWrite.All
+## 致谢
+
+Upstream：https://github.com/vanyouseea/o365
