@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>管理员登录 · O365 管理系统</title>
+  <link rel="icon" href="/favicon.ico">
+
+  <script>
+    // Apply theme early to reduce flash (shared key with backend pages)
+    (function(){
+      var key = "o365_theme";
+      var stored = "";
+      try{ stored = localStorage.getItem(key) || ""; }catch(e){}
+      var mode = (stored === "dark" || stored === "light") ? stored : "";
+      if(!mode){
+        try{
+          mode = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+        }catch(e){ mode = "light"; }
+      }
+      document.documentElement.setAttribute("data-theme", mode);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="/css/login_github.css" />
+</head>
+<body>
+  <div class="gh-wrap">
+    <header class="gh-brand" aria-label="O365 管理系统">
+      <div class="gh-brand-left">
+        <div class="ms-squares" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div>
+          <h1 class="gh-brand-title">O365 管理系统</h1>
+          <div class="gh-brand-sub">管理员登录</div>
+        </div>
+      </div>
+
+      <div class="gh-brand-actions">
+        <button type="button" id="themeToggle" class="theme-toggle" title="切换到深色" aria-label="切换到深色">
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A8.5 8.5 0 0 1 9.8 3a7 7 0 1 0 11.2 11.2Z"/></svg>
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-16a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 18a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 5.64a1 1 0 0 1 1.42 0l.71.7a1 1 0 1 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41Zm13.42 13.42a1 1 0 0 1 1.41 0l.71.7a1 1 0 0 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41ZM2 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm18 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM5.64 19.78a1 1 0 0 1 0-1.42l.7-.71a1 1 0 1 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Zm13.42-13.42a1 1 0 0 1 0-1.41l.7-.71a1 1 0 0 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Z"/></svg>
+        </button>
+
+        <a class="gh-link" href="https://github.com/datout/O365" target="_blank" rel="noopener" title="GitHub 仓库">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </header>
+
+    <main class="gh-card" role="main" aria-label="登录表单">
+      <h2>登录</h2>
+      <p class="gh-subtext">请输入管理员账号密码进入后台。</p>
+
+      <form id="ff" method="post" action="/login" autocomplete="on">
+        <div class="gh-field">
+          <label for="username">用户名</label>
+          <input class="gh-input" id="username" name="username" type="text" autocomplete="username" placeholder="请输入用户名" required>
+        </div>
+
+        <div class="gh-field">
+          <label for="password">密码</label>
+          <div class="gh-password">
+            <input class="gh-input" id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码" required>
+            <button type="button" class="icon-btn" id="togglePwd" title="显示/隐藏密码" aria-label="显示/隐藏密码">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5c-5 0-9 5-9 7s4 7 9 7 9-5 9-7-4-7-9-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="gh-actions">
+          <button class="btn primary" type="submit">登录</button>
+          <button class="btn" type="button" id="btnReset">重置</button>
+        </div>
+      </form>
+
+      <div class="gh-tip">
+        没有账号？<a href="reg">点此注册</a>
+      </div>
+    </main>
+
+    <div class="gh-footer">
+      <span>Powered by O365</span>
+      <a href="/">返回首页</a>
+    </div>
+  </div>
+
+  <script>
+    // Theme toggle (light/dark)
+    (function(){
+      var key = "o365_theme";
+      var btn = document.getElementById("themeToggle");
+      function getStored(){ try{ return localStorage.getItem(key) || ""; }catch(e){ return ""; } }
+      function setStored(v){ try{ localStorage.setItem(key, v); }catch(e){} }
+      function apply(mode){
+        var m = (mode === "dark") ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", m);
+        if(btn){
+          var next = (m === "dark") ? "light" : "dark";
+          btn.setAttribute("title", next === "dark" ? "切换到深色" : "切换到浅色");
+          btn.setAttribute("aria-label", btn.getAttribute("title"));
+        }
+      }
+
+      var initial = document.documentElement.getAttribute("data-theme") || "light";
+      apply(initial);
+
+      if(btn){
+        btn.addEventListener("click", function(){
+          var current = document.documentElement.getAttribute("data-theme") || "light";
+          var next = (current === "dark") ? "light" : "dark";
+          setStored(next);
+          apply(next);
+        });
+      }
+
+      // Follow system if user never explicitly chose light/dark
+      var stored = getStored();
+      if(stored !== "dark" && stored !== "light"){
+        var mq = null;
+        try{ mq = window.matchMedia("(prefers-color-scheme: dark)"); }catch(e){}
+        if(mq){
+          var handler = function(){
+            var s = getStored();
+            if(s !== "dark" && s !== "light"){
+              apply(mq.matches ? "dark" : "light");
+            }
+          };
+          try{ mq.addEventListener("change", handler); }
+          catch(e){ try{ mq.addListener(handler); }catch(e2){} }
+        }
+      }
+    })();
+
+    // UX helpers
+    (function(){
+      var user = document.getElementById('username');
+      var pwd = document.getElementById('password');
+      var reset = document.getElementById('btnReset');
+      var toggle = document.getElementById('togglePwd');
+
+      if(user){ user.focus(); }
+
+      if(reset){
+        reset.addEventListener('click', function(){
+          if(user) user.value = '';
+          if(pwd) pwd.value = '';
+          if(user) user.focus();
+        });
+      }
+
+      if(toggle && pwd){
+        toggle.addEventListener('click', function(){
+          var isPwd = pwd.getAttribute('type') === 'password';
+          pwd.setAttribute('type', isPwd ? 'text' : 'password');
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+/*
+  auth.css
+  A lightweight, Microsoft-ish flat style for /login.html and /refer.html pages.
+*/
+
+:root {
+  --ms-bg: #f3f2f1;
+  --ms-card: #ffffff;
+  --ms-text: #1b1a19;
+  --ms-sub: #605e5c;
+  --ms-border: #e1dfdd;
+  --ms-border-strong: #8a8886;
+  --ms-brand: #0067b8;
+  --ms-brand-hover: #005a9e;
+  --ms-danger: #a80000;
+  --ms-success: #107c10;
+}
+
+html, body {
+  height: 100%;
+}
+
+body.ms-auth {
+  margin: 0;
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  color: var(--ms-text);
+  background: var(--ms-bg);
+}
+
+.ms-auth__wrap {
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 16px;
+}
+
+.ms-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--ms-card);
+  border: 1px solid var(--ms-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ms-card__header {
+  display: flex;
+  gap: 14px;
+  padding: 22px 22px 10px 22px;
+}
+
+.ms-logo {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.ms-logo .sq { display: block; width: 100%; height: 100%; border-radius: 2px; }
+.ms-logo .sq.a { background: #f25022; }
+.ms-logo .sq.b { background: #7fba00; }
+.ms-logo .sq.c { background: #00a4ef; }
+.ms-logo .sq.d { background: #ffb900; }
+
+.ms-title {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.ms-subtitle {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--ms-sub);
+  line-height: 1.4;
+}
+
+.ms-card__body {
+  padding: 14px 22px 8px 22px;
+}
+
+.ms-field {
+  margin: 12px 0;
+}
+
+.ms-label {
+  display: block;
+  font-size: 13px;
+  color: var(--ms-sub);
+  margin: 0 0 6px;
+}
+
+/* EasyUI textbox/combobox - make it flatter */
+.ms-auth .textbox,
+.ms-auth .combo {
+  border-radius: 6px !important;
+  border: 1px solid var(--ms-border-strong) !important;
+}
+
+.ms-auth .textbox .textbox-text,
+.ms-auth .combo .textbox-text {
+  height: 40px !important;
+  line-height: 40px !important;
+  padding: 0 12px !important;
+  font-size: 14px !important;
+}
+
+.ms-auth .textbox-focused,
+.ms-auth .combo-focused {
+  border-color: var(--ms-brand) !important;
+  box-shadow: 0 0 0 3px rgba(0,103,184,.15) !important;
+}
+
+.ms-auth .textbox-addon {
+  right: 8px !important;
+}
+
+.ms-help {
+  font-size: 12px;
+  color: var(--ms-sub);
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+
+.ms-tip {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #f8f8f8;
+  border: 1px solid var(--ms-border);
+  color: var(--ms-sub);
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.ms-tip--error {
+  background: #fdf2f2;
+  border-color: #f3c6c6;
+  color: var(--ms-danger);
+}
+
+.ms-tip--success {
+  background: #f3fbf4;
+  border-color: #b7dfb9;
+  color: var(--ms-success);
+}
+
+.ms-card__footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 22px 22px 22px;
+  border-top: 1px solid var(--ms-border);
+  background: #faf9f8;
+}
+
+.ms-btn {
+  appearance: none;
+  border: 1px solid var(--ms-border-strong);
+  background: #ffffff;
+  color: var(--ms-text);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ms-btn:hover {
+  background: #f8f8f8;
+}
+
+.ms-btn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.ms-btn--primary {
+  background: var(--ms-brand);
+  border-color: var(--ms-brand);
+  color: #ffffff;
+}
+
+.ms-btn--primary:hover {
+  background: var(--ms-brand-hover);
+  border-color: var(--ms-brand-hover);
+}
+
+.ms-btn--primary:disabled {
+  background: var(--ms-brand);
+  border-color: var(--ms-brand);
+}
+
+.ms-footer-note {
+  padding: 0 22px 18px 22px;
+  font-size: 12px;
+  color: var(--ms-sub);
+}
+
+.ms-footer-note a {
+  color: var(--ms-brand);
+  text-decoration: none;
+}
+
+.ms-footer-note a:hover {
+  text-decoration: underline;
+}

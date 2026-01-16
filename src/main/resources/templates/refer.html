@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 Office 365 子账号</title>
+
+  <!-- jQuery from easyui bundle (project already ships it) -->
+  <script type="text/javascript" th:src="@{/jquery-easyui-1.9.14/jquery.min.js}"></script>
+
+  <!-- GitHub-inspired flat style for refer page only -->
+  <link rel="stylesheet" th:href="@{/css/refer_github.css}">
+</head>
+
+<body th:attr="data-noinvite=${noInviteEnabled}">
+  <div class="gh-wrap">
+    <div class="gh-brand" aria-label="Microsoft O365">
+      <div class="gh-brand-center">
+        <div class="ms-squares" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <h1>注册 Office 365 子账号</h1>
+      </div>
+
+      <!-- Theme toggle: auto/light/dark -->
+      <div class="gh-theme" aria-label="主题切换" role="group">
+        <button type="button" class="gh-theme-btn" data-theme="auto" title="跟随系统" aria-label="跟随系统">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7A2.5 2.5 0 0 1 17.5 16H13v2h2a1 1 0 1 1 0 2H9a1 1 0 1 1 0-2h2v-2H6.5A2.5 2.5 0 0 1 4 13.5v-7Z"/></svg>
+        </button>
+        <button type="button" class="gh-theme-btn" data-theme="light" title="浅色模式" aria-label="浅色模式">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-16a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 18a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 5.64a1 1 0 0 1 1.42 0l.71.7a1 1 0 1 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41Zm13.42 13.42a1 1 0 0 1 1.41 0l.71.7a1 1 0 0 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41ZM2 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm18 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM5.64 19.78a1 1 0 0 1 0-1.42l.7-.71a1 1 0 1 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Zm13.42-13.42a1 1 0 0 1 0-1.41l.7-.71a1 1 0 0 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Z"/></svg>
+        </button>
+        <button type="button" class="gh-theme-btn" data-theme="dark" title="深色模式" aria-label="深色模式">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A8.5 8.5 0 0 1 9.8 3a7 7 0 1 0 11.2 11.2Z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="gh-card" role="main" aria-label="注册表单">
+      <p class="sub" th:if="${noInviteEnabled}">
+        ✅ 公开注册已开启：请选择域名后注册（订阅由后台固定配置）。
+        <span class="mono" th:if="${noInviteLimit != null and noInviteLimit > 0}">（剩余 <b th:text="${noInviteRemain}"></b>/<b th:text="${noInviteLimit}"></b>）</span>
+        <span class="mono" th:if="${noInviteLimit != null and noInviteLimit <= 0}">（不限量，已注册 <b th:text="${noInviteUsed}"></b>）</span>
+      </p>
+      <p class="sub" th:unless="${noInviteEnabled}">
+        使用邀请码创建账号。创建后请到 office.com 登录。
+      </p>
+
+      <div class="gh-field">
+        <label for="displayName">用户名</label>
+        <input id="displayName" name="displayName" type="text" autocomplete="name" placeholder="请输入用户名（支持中文/字母/数字）">
+      </div>
+
+      <div class="gh-field">
+        <label for="mailNickname">邮箱前缀</label>
+
+        <div class="gh-inline">
+          <input id="mailNickname" name="mailNickname" type="text" autocomplete="username" placeholder="请输入邮箱前缀（字母或数字）">
+
+          <!-- No-invite: choose verified domain from backend (Graph) -->
+          <select id="domainSel" name="domain" class="gh-select" th:if="${noInviteEnabled}">
+            <option th:each="d : ${noInviteDomains}"
+                    th:value="${d}"
+                    th:text="${d}"
+                    th:selected="${d == noInviteDomainDefault}">
+            </option>
+          </select>
+
+          <!-- Invite mode: show suffix decided by invite code -->
+          <span id="inviteSuffix" class="gh-suffix" th:if="${!noInviteEnabled}">@</span>
+        </div>
+
+        <div class="gh-hint" id="upnPreview">将创建邮箱：</div>
+      </div>
+
+
+      <div class="gh-field" th:if="${!noInviteEnabled}">
+        <label for="inviteCd">邀请码</label>
+        <input id="inviteCd" name="inviteCd" type="text" autocomplete="one-time-code" placeholder="请输入邀请码">
+      </div>
+
+      <div class="gh-field">
+        <label for="password">密码</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" placeholder="至少 8 位，且包含字母 + 数字">
+      </div>
+
+      <div class="gh-field">
+        <label for="password2">确认密码</label>
+        <input id="password2" name="password2" type="password" autocomplete="new-password" placeholder="再次输入密码">
+      </div>
+
+      <div class="gh-actions">
+        <button class="btn primary" type="button" id="btnReg">注册</button>
+        <button class="btn muted" type="button" id="btnReset">重置</button>
+      </div>
+
+      <div class="gh-tip" id="tip">
+        <span th:if="${noInviteEnabled}">请填写用户名、邮箱前缀、选择域名和密码后点击“注册”。</span>
+        <span th:unless="${noInviteEnabled}">请填写用户名、邮箱前缀、邀请码和密码后点击“注册”。请勿刷新或重复点击注册，否则可能会导致邀请码失效。</span>
+      </div>
+    </div>
+
+    <div class="gh-links">
+      <a href="https://office.com" target="_blank" rel="noopener">前往 office.com</a>
+      <a href="/">返回首页</a>
+    </div>
+
+    <div class="gh-footer">Powered by O365</div>
+  </div>
+
+  <script type="text/javascript">
+    // Theme: auto (follow system) / light / dark
+    (function () {
+      var key = "o365_theme";
+      var root = document.documentElement;
+
+      function apply(mode) {
+        if (mode === "light" || mode === "dark") {
+          root.setAttribute("data-theme", mode);
+        } else {
+          root.removeAttribute("data-theme"); // auto
+          mode = "auto";
+        }
+        var btns = document.querySelectorAll(".gh-theme-btn");
+        btns.forEach(function (b) {
+          var t = b.getAttribute("data-theme");
+          b.classList.toggle("active", t === mode);
+        });
+      }
+
+      var stored = "";
+      try { stored = localStorage.getItem(key) || ""; } catch (e) {}
+      apply(stored);
+
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".gh-theme-btn").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var mode = b.getAttribute("data-theme");
+            var val = (mode === "auto") ? "" : mode;
+            try { localStorage.setItem(key, val); } catch (e) {}
+            apply(val);
+          });
+        });
+        try { apply(localStorage.getItem(key) || ""); } catch (e) {}
+      });
+    })();
+
+    function setTip(msg, type){
+      var el = $('#tip');
+      el.removeClass('error ok');
+      if(type === 'error'){ el.addClass('error'); }
+      if(type === 'ok'){ el.addClass('ok'); }
+      el.html(msg);
+    }
+
+    function clearForm(){
+      $('#displayName').val('');
+      $('#mailNickname').val('');
+      $('#inviteCd').val('');
+      $('#password').val('');
+      $('#password2').val('');
+      $('#displayName').trigger('focus');
+      updatePreview();
+    }
+
+    function isNoInvite(){
+      var v = document.body.getAttribute('data-noinvite');
+      return (v === 'true' || v === 'TRUE' || v === '1' || v === 'Y' || v === 'y');
+    }
+
+    function currentSuffix(){
+      if(isNoInvite()){
+        return ($('#domainSel').val() || '').trim(); // contains '@'
+      }
+      return ($('#inviteSuffix').text() || '@').trim();
+    }
+
+    function updatePreview(){
+      var nick = $.trim($('#mailNickname').val());
+      var suffix = currentSuffix();
+      if(!suffix) suffix = '@';
+      var el = $('#upnPreview');
+      if(el.length){
+        if(nick){
+          el.text('将创建邮箱：' + nick + suffix);
+        } else {
+          el.text('将创建邮箱：' + suffix);
+        }
+      }
+    }
+
+    // Invite mode: query suffix decided by invite code for display
+    var _inviteTimer = null;
+    function fetchInviteSuffix(){
+      if(isNoInvite()) return;
+      var code = $.trim($('#inviteCd').val());
+      if(!code){
+        $('#inviteSuffix').text('@');
+        updatePreview();
+        return;
+      }
+      $.ajax({
+        url: '/public/inviteSuffix',
+        type: 'get',
+        data: { inviteCd: code },
+        success: function(res){
+          try{ if(typeof res === 'string') res = JSON.parse(res); }catch(e){}
+          if(res && (res.status === '0' || res.status === 0) && res.suffix){
+            $('#inviteSuffix').text(res.suffix);
+          } else {
+            $('#inviteSuffix').text('@');
+          }
+          updatePreview();
+        },
+        error: function(){
+          $('#inviteSuffix').text('@');
+          updatePreview();
+        }
+      });
+    }
+
+    function onInviteInput(){
+      clearTimeout(_inviteTimer);
+      _inviteTimer = setTimeout(fetchInviteSuffix, 250);
+    }
+
+    function reg(){
+      var displayName = $.trim($('#displayName').val());
+      var mailNickname = $.trim($('#mailNickname').val());
+      var inviteCd = $.trim($('#inviteCd').val());
+      var password = $.trim($('#password').val());
+      var password2 = $.trim($('#password2').val());
+
+      if(!displayName){
+        setTip('请输入用户名', 'error');
+        $('#displayName').trigger('focus');
+        return;
+      }
+      if(!mailNickname){
+        setTip('请输入邮箱前缀', 'error');
+        $('#mailNickname').trigger('focus');
+        return;
+      }
+      if(!/^[A-Za-z0-9]+$/.test(mailNickname)){
+        setTip('邮箱前缀只能包含字母或数字', 'error');
+        $('#mailNickname').trigger('focus');
+        return;
+      }
+      if(!password){
+        setTip('请输入密码', 'error');
+        $('#password').trigger('focus');
+        return;
+      }
+      if(!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)){
+        setTip('密码至少 8 位，且必须包含字母 + 数字', 'error');
+        $('#password').trigger('focus');
+        return;
+      }
+      if(password2 !== password){
+        setTip('两次输入的密码不一致', 'error');
+        $('#password2').trigger('focus');
+        return;
+      }
+
+      var noInvite = isNoInvite();
+      if(!noInvite){
+        if(!inviteCd){
+          setTip('请输入邀请码', 'error');
+          $('#inviteCd').trigger('focus');
+          return;
+        }
+      }
+
+      setTip('正在注册，请稍候…', '');
+
+      var url = noInvite ? '/createUserNoInvite' : '/createUserByInviteCd';
+      var payload = { displayName: displayName, mailNickname: mailNickname, password: password };
+      if(noInvite){ payload.domain = $("#domainSel").val() || ""; }
+      if(!noInvite){ payload.inviteCd = inviteCd; }
+
+      $.ajax({
+        url: url,
+        type: 'post',
+        data: payload,
+        success: function(result){
+          if(typeof result === 'string' && result.indexOf('0|') === 0){
+            var upn = result.split('|')[1] || '';
+            setTip('✅ 注册成功：<b>' + upn + '</b><br>请前往 office.com 登录。', 'ok');
+          } else {
+            setTip('❌ 注册失败：' + (result || '未知错误'), 'error');
+          }
+        },
+        error: function(xhr){
+          setTip('❌ 请求失败：HTTP ' + xhr.status, 'error');
+        }
+      });
+    }
+
+    $(function(){
+      $('#btnReg').on('click', reg);
+      $('#btnReset').on('click', function(){
+        clearForm();
+        var noInvite = isNoInvite();
+        if(noInvite){
+	          setTip('请填写用户名、邮箱前缀、选择域名和密码后点击“注册”。', '');
+        } else {
+	          setTip('请填写用户名、邮箱前缀、邀请码和密码后点击“注册”。请勿刷新或重复点击注册，否则可能会导致邀请码失效。', '');
+        }
+      });
+
+      $('#mailNickname').on('input', updatePreview);
+      $('#domainSel').on('change', updatePreview);
+      $('#inviteCd').on('input', onInviteInput);
+
+      // Enter to submit
+      $('#password2').on('keydown', function(e){
+        if(e.key === 'Enter') reg();
+      });
+      $('#inviteCd').on('keydown', function(e){
+        if(e.key === 'Enter') reg();
+      });
+
+      // init
+      updatePreview();
+      fetchInviteSuffix();
+    });
+  </script>
+</body>
+</html>

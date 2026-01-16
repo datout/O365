@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>公开注册设置</title>
+</head>
+<body>
+<div class="ni-page">
+
+  <div class="ni-hero">
+    <div>
+      <div class="ni-title">公开注册（无邀请码）</div>
+      <div class="ni-desc">开启后，注册页默认进入无邀请码注册；用户可选择域名（来自 Graph 已验证域名），订阅使用后台固定配置。配置完成后 <a class="ni-desc-link" href="/refer" target="_blank" rel="noopener">点击这里打开注册页</a>。</div>
+    </div>
+
+    <div class="ni-hero-right">
+      <div class="ni-switch-xl">
+        <input id="niEnable" class="easyui-switchbutton" data-options="onText:'启用',offText:'关闭'">
+      </div>
+      <div class="ni-status">
+        <div class="t">当前状态</div>
+        <div class="ni-inline">
+          <span id="niStatusBadge" class="ni-badge ni-badge-off">已关闭</span>
+          <span id="niStatusText" class="v">仅邀请码模式</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ni-grid">
+    <div class="ni-card ni-setting">
+      <div class="ni-setting-row">
+        <div class="ni-setting-meta">
+          <div class="ni-setting-title">可注册名额</div>
+          <div class="ni-setting-desc">0 表示不限量，建议配合“已使用数量”监控消耗。</div>
+        </div>
+        <div class="ni-setting-ctrl">
+          <input id="niLimit" class="easyui-numberbox" style="width:360px;max-width:100%" data-options="min:0,precision:0">
+        </div>
+      </div>
+    </div>
+
+    <div class="ni-card ni-setting">
+      <div class="ni-setting-row">
+        <div class="ni-setting-meta">
+          <div class="ni-setting-title">已使用数量</div>
+          <div class="ni-setting-desc">仅用于统计注册消耗，不影响已创建的用户。</div>
+        </div>
+        <div class="ni-setting-ctrl">
+          <div class="ni-actions-row">
+            <input id="niUsed" class="easyui-textbox" style="width:160px" data-options="readonly:true">
+            <a href="javascript:void(0)" id="niResetUsed" class="easyui-linkbutton" data-options="iconCls:'icon-undo'">清零</a>
+          </div>
+          <div class="ni-note ni-note--warn ni-note-compact">清零只影响统计，不会删除已创建用户。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ni-card ni-setting">
+      <div class="ni-setting-row">
+        <div class="ni-setting-meta">
+          <div class="ni-setting-title">默认域名</div>
+          <div class="ni-setting-desc">用于无邀请码注册页的默认选择（来自 Graph 已验证域名）。</div>
+        </div>
+        <div class="ni-setting-ctrl">
+          <input id="niDomain" class="easyui-combobox" style="width:360px;max-width:100%"
+                 data-options="valueField:'text',textField:'text',editable:false,panelHeight:'auto'">
+          <div class="ni-note ni-note-compact">域名展示均带 <code>@</code>，例如 <code>@contoso.com</code>。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ni-card ni-field-wide ni-setting">
+      <div class="ni-setting-row ni-setting-row--wide">
+        <div class="ni-setting-meta">
+          <div class="ni-setting-title">固定订阅（可多选）</div>
+          <div class="ni-setting-desc">可勾选一个或多个 SKU；注册成功后将自动分配所选订阅（用户端不显示/不可选择）。</div>
+        </div>
+        <div class="ni-setting-ctrl">
+          <div class="ni-sku-top">
+          <div class="ni-sku-search">
+          <input id="niSkuFilter" class="easyui-textbox" style="width:100%"
+          data-options="prompt:'搜索订阅（名称/skuId）'">
+          </div>
+          
+          <div class="ni-sku-tools">
+          <span id="niSkuCount" class="ni-badge ni-badge-off">已选 0</span>
+          <a href="javascript:void(0)" id="niSkuSelectAll" class="easyui-linkbutton app-btn app-btn--ghost ni-btn" data-options="iconCls:'icon-ok'">全选</a>
+          <a href="javascript:void(0)" id="niSkuClear" class="easyui-linkbutton app-btn app-btn--ghost ni-btn" data-options="iconCls:'icon-cancel'">清空</a>
+          </div>
+          </div>
+          
+          <div class="ni-sku-subhead">
+          <span>已选择</span>
+          <span class="meta">可点击标签 × 取消选择</span>
+          </div>
+          <div id="niSelectedChips" class="ni-chips">
+          <span class="ni-chip-empty">未选择订阅</span>
+          </div>
+          
+          <div class="ni-sku-subhead">
+          <span>可选订阅</span>
+          <span class="meta">勾选后会在下方显示</span>
+          </div>
+          
+          <div id="niSkuList" class="ni-skulist">
+          <div class="ni-sku-empty">正在加载订阅列表…</div>
+          </div>
+          
+          <div class="ni-note ni-note-compact">如果你的租户里 SKU 名称较长，可用上方搜索快速过滤（支持名称/skuId）。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ni-actions">
+    <a href="javascript:void(0)" id="niSave" class="easyui-linkbutton app-btn app-btn--primary ni-save" data-options="iconCls:'icon-save'">保存设置</a>
+    <span id="niMsg" style="margin-left:0;color:#0a7;"></span>
+  </div>
+</div>
+
+<script type="text/javascript">
+  (function(){
+    var _switchBound = false;
+    var _filterBound = false;
+
+    var _licenses = []; // [{id,text}]
+    var _selected = {}; // {skuId:true}
+
+    function normalizeSkuIds(s){
+      if(!s) return [];
+      if(typeof s !== 'string') s = String(s);
+      s = s.replace(/，/g, ',');
+      var parts = s.split(',');
+      var out = [];
+      for(var i=0;i<parts.length;i++){
+        var x = (parts[i]||'').trim();
+        if(!x) continue;
+        if(out.indexOf(x) === -1) out.push(x);
+      }
+      return out;
+    }
+
+    function selectedArray(){
+      var arr = [];
+      for(var k in _selected){
+        if(_selected.hasOwnProperty(k) && _selected[k]) arr.push(k);
+      }
+      return arr;
+    }
+
+    function updateSkuCount(){
+      var n = selectedArray().length;
+      var $c = $('#niSkuCount');
+      $c.text('已选 ' + n);
+      if(n>0){
+        $c.removeClass('ni-badge-off').addClass('ni-badge-on');
+      }else{
+        $c.removeClass('ni-badge-on').addClass('ni-badge-off');
+      }
+      renderSelectedChips();
+    }
+
+    function skuTextById(id){
+      id = (id || '').trim();
+      for(var i=0;i<_licenses.length;i++){
+        var it = _licenses[i] || {};
+        var _id = (it.id || '').trim();
+        if(_id && _id === id){
+          var t = (it.text || '').trim();
+          return t || id;
+        }
+      }
+      return id;
+    }
+
+    function shortId(id){
+      id = (id || '').trim();
+      if(!id) return '';
+      if(id.length <= 18) return id;
+      return id.substring(0, 8) + '…' + id.substring(id.length - 6);
+    }
+
+    function renderSelectedChips(){
+      var arr = selectedArray();
+      if(!arr.length){
+        $('#niSelectedChips').html('<span class="ni-chip-empty">未选择订阅</span>');
+        return;
+      }
+      var maxShow = 8;
+      var html = '';
+      for(var i=0;i<arr.length && i<maxShow;i++){
+        var id = arr[i];
+        var name = skuTextById(id);
+        html += '<span class="ni-chip" title="' + escapeHtml(id) + '">' +
+                  '<span class="ni-chip-name">' + escapeHtml(name) + '</span>' +
+                  '<span class="ni-chip-id">' + escapeHtml(shortId(id)) + '</span>' +
+                  '<span class="ni-chip-x" data-id="' + escapeHtml(id) + '">×</span>' +
+                '</span>';
+      }
+      if(arr.length > maxShow){
+        html += '<span class="ni-chip ni-chip-more" title="' + arr.length + '">+' + (arr.length - maxShow) + '</span>';
+      }
+      $('#niSelectedChips').html(html);
+    }
+
+    function renderSkuList(filterText){
+      filterText = (filterText||'').toLowerCase();
+      var html = '';
+      var shown = 0;
+      for(var i=0;i<_licenses.length;i++){
+        var it = _licenses[i] || {};
+        var id = (it.id||'').trim();
+        var text = (it.text||id||'').trim();
+        if(!id) continue;
+        if(filterText){
+          var hay = (text + ' ' + id).toLowerCase();
+          if(hay.indexOf(filterText) === -1) continue;
+        }
+        shown++;
+        var checked = _selected[id] ? 'checked' : '';
+        var cls = 'ni-sku-item' + (_selected[id] ? ' ni-sku-item--selected' : '');
+        html += '<label class="' + cls + '" title="' + id + '">' +
+                  '<input type="checkbox" class="ni-sku-cb" value="' + id + '" ' + checked + '>' +
+                  '<div class="ni-sku-body">' +
+                    '<div class="ni-sku-name">' + escapeHtml(text) + '</div>' +
+                    '<div class="ni-sku-id">' + escapeHtml(id) + '</div>' +
+                  '</div>' +
+                '</label>';
+      }
+      if(shown === 0){
+        html = '<div class="ni-sku-empty">没有匹配的订阅</div>';
+      }
+      $('#niSkuList').html(html);
+      updateSkuCount();
+    }
+
+    function escapeHtml(s){
+      if(s == null) return '';
+      return String(s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/\'/g,'&#39;');
+    }
+
+    function bindSkuEventsOnce(){
+      if(_filterBound) return;
+      _filterBound = true;
+
+      // checkbox change (event delegation)
+      $('#niSkuList').on('change', 'input.ni-sku-cb', function(){
+        var id = $(this).val();
+        var checked = $(this).is(':checked');
+        _selected[id] = checked;
+        $(this).closest('.ni-sku-item').toggleClass('ni-sku-item--selected', checked);
+        updateSkuCount();
+      });
+
+      // remove a selected chip
+      $('#niSelectedChips').on('click', '.ni-chip-x', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var id = $(this).attr('data-id');
+        if(!id) return;
+        _selected[id] = false;
+        renderSkuList($('#niSkuFilter').textbox('getValue') || '');
+      });
+
+      // filter input
+      try{
+        var $tb = $('#niSkuFilter').textbox('textbox');
+        $tb.on('input', function(){
+          renderSkuList($(this).val());
+        });
+      }catch(e){
+        $('#niSkuFilter').on('input', function(){
+          renderSkuList($(this).val());
+        });
+      }
+
+      $('#niSkuSelectAll').on('click', function(){
+        for(var i=0;i<_licenses.length;i++){
+          var id = (_licenses[i] && _licenses[i].id) ? String(_licenses[i].id).trim() : '';
+          if(id) _selected[id] = true;
+        }
+        renderSkuList($('#niSkuFilter').textbox('getValue') || '');
+      });
+
+      $('#niSkuClear').on('click', function(){
+        _selected = {};
+        renderSkuList($('#niSkuFilter').textbox('getValue') || '');
+      });
+    }
+
+    function bindSwitchOnce(){
+      if(_switchBound) return;
+      try{
+        $('#niEnable').switchbutton({
+          onChange: function(checked){ renderStatus(checked); }
+        });
+        _switchBound = true;
+      }catch(e){}
+    }
+
+    function renderStatus(checked){
+      var $badge = $('#niStatusBadge');
+      var $text = $('#niStatusText');
+      if(checked){
+        $badge.removeClass('ni-badge-off').addClass('ni-badge-on').text('已开启');
+        $text.text('公开注册开启');
+      }else{
+        $badge.removeClass('ni-badge-on').addClass('ni-badge-off').text('已关闭');
+        $text.text('仅邀请码模式');
+      }
+    }
+
+    function showMsg(t, isErr){
+      $('#niMsg').css('color', isErr ? '#c00' : '#0a7').text(t || '');
+      if(t){ setTimeout(function(){ $('#niMsg').text(''); }, 4000); }
+    }
+
+    function load(){
+      $.ajax({
+        url: '/getNoInviteRegConfig',
+        type: 'post',
+        success: function(res){
+          try{ if(typeof res === 'string') res = JSON.parse(res); }catch(e){}
+          if(!res){ showMsg('加载失败', true); return; }
+
+          // ensure the switch is initialized & reflects server state
+          bindSwitchOnce();
+
+          try{
+            if(res.enable === 'Y') $('#niEnable').switchbutton('check');
+            else $('#niEnable').switchbutton('uncheck');
+          }catch(e){
+            try{ $('#niEnable').switchbutton(res.enable === 'Y'); }catch(_e){}
+          }
+          renderStatus(res.enable === 'Y');
+          $('#niLimit').numberbox('setValue', res.limit || 0);
+          $('#niUsed').textbox('setValue', res.used || 0);
+
+          // domains
+          try{
+            var domains = res.domains || [];
+            $('#niDomain').combobox('loadData', domains);
+            if(res.domain){ $('#niDomain').combobox('setValue', res.domain); }
+            else if(domains.length){ $('#niDomain').combobox('setValue', domains[0].text); }
+          }catch(e){}
+
+          // licenses (multi-select)
+          try{
+            _licenses = res.licenses || [];
+            var pre = normalizeSkuIds(res.skuIds || res.skuId || '');
+            _selected = {};
+            for(var i=0;i<pre.length;i++) _selected[pre[i]] = true;
+            bindSkuEventsOnce();
+            renderSkuList($('#niSkuFilter').textbox('getValue') || '');
+          }catch(e){
+            $('#niSkuList').html('<div class="ni-sku-empty">加载订阅失败</div>');
+          }
+        },
+        error: function(){ showMsg('加载失败', true); }
+      });
+    }
+
+    $('#niSave').on('click', function(){
+      var skuIds = selectedArray().join(',');
+      var payload = {
+        enable: $('#niEnable').switchbutton('options').checked ? 'Y' : 'N',
+        limit: $('#niLimit').numberbox('getValue') || '0',
+        domain: $('#niDomain').combobox('getValue') || '',
+        skuId: skuIds
+      };
+      $.ajax({
+        url: '/saveNoInviteRegConfig',
+        type: 'post',
+        data: payload,
+        success: function(ok){
+          if(ok === true || ok === 'true'){ showMsg('✅ 已保存'); load(); }
+          else { showMsg('保存失败', true); }
+        },
+        error: function(){ showMsg('保存失败', true); }
+      });
+    });
+
+    $('#niResetUsed').on('click', function(){
+      $.ajax({
+        url: '/resetNoInviteRegUsed',
+        type: 'post',
+        success: function(ok){
+          if(ok === true || ok === 'true'){ showMsg('✅ 已清零'); load(); }
+          else { showMsg('清零失败', true); }
+        },
+        error: function(){ showMsg('清零失败', true); }
+      });
+    });
+
+    load();
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,256 @@
+/*
+  easyui_github.css
+  Make EasyUI windows / dialogs / messager look modern & GitHub-ish.
+  Works with both default and black themes, and follows html[data-theme].
+*/
+
+:root{
+  --gh-ui-bg: #ffffff;
+  --gh-ui-bg2: #f6f8fa;
+  --gh-ui-text: #1f2328;
+  --gh-ui-muted: #57606a;
+  --gh-ui-border: #d0d7de;
+  --gh-ui-accent: #0969da;
+  --gh-ui-accent2: #0550ae;
+  --gh-ui-danger: #cf222e;
+  --gh-ui-shadow: 0 16px 40px rgba(31,35,40,.22);
+}
+
+html[data-theme="dark"]{
+  --gh-ui-bg: #161b22;
+  --gh-ui-bg2: #0d1117;
+  --gh-ui-text: #c9d1d9;
+  --gh-ui-muted: #8b949e;
+  --gh-ui-border: #30363d;
+  --gh-ui-accent: #2f81f7;
+  --gh-ui-accent2: #1f6feb;
+  --gh-ui-danger: #ff7b72;
+  --gh-ui-shadow: 0 18px 46px rgba(0,0,0,.55);
+}
+
+/* Window / Dialog shell */
+.window,
+.messager-window{
+  border-radius: 14px !important;
+  overflow: hidden;
+  border: 1px solid var(--gh-ui-border) !important;
+  box-shadow: var(--gh-ui-shadow) !important;
+  background: var(--gh-ui-bg2) !important; /* prevent EasyUI default blue showing through */
+}
+
+
+.window-shadow{
+  border-radius: 14px !important;
+}
+
+.window-mask{
+  background: rgba(31,35,40,.36) !important;
+}
+html[data-theme="dark"] .window-mask{
+  background: rgba(0,0,0,.55) !important;
+}
+
+.window .window-header,
+.messager-window .window-header{
+  background: var(--gh-ui-bg2) !important;
+  border-bottom: 1px solid var(--gh-ui-border) !important;
+  padding: 10px 12px !important;
+}
+
+.window .panel-title,
+.messager-window .panel-title{
+  font-weight: 700 !important;
+  color: var(--gh-ui-text) !important;
+}
+
+.window .window-body,
+.messager-window .window-body{
+  background: var(--gh-ui-bg) !important;
+  color: var(--gh-ui-text) !important;
+}
+
+
+/* Panel body safety (prevents theme gaps on some dialogs) */
+.window .panel-body,
+.messager-window .panel-body{
+  background: var(--gh-ui-bg) !important;
+  color: var(--gh-ui-text) !important;
+}
+
+/* Make the content breathe */
+.messager-body{
+  padding: 16px 16px 12px 16px !important;
+  line-height: 1.65;
+  font-size: 13px;
+  color: var(--gh-ui-text);
+  overflow: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.messager-body a{ color: var(--gh-ui-accent) !important; }
+.messager-body b{ font-weight: 800; }
+
+/* Tool buttons (close etc.) */
+.window .panel-tool a,
+.messager-window .panel-tool a{
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  opacity: .9;
+  margin-left: 4px;
+}
+.window .panel-tool a:hover,
+.messager-window .panel-tool a:hover{
+  background: rgba(9,105,218,.12) !important;
+  opacity: 1;
+}
+html[data-theme="dark"] .window .panel-tool a:hover,
+html[data-theme="dark"] .messager-window .panel-tool a:hover{
+  background: rgba(47,129,247,.18) !important;
+}
+
+/* Fix EasyUI default 16px tool area clipping (close icon gets cut) */
+.window .window-header .panel-tool,
+.messager-window .window-header .panel-tool{
+  height: 26px !important;
+  overflow: visible !important;
+  top: 50% !important;
+  margin-top: -13px !important;
+  right: 10px !important;
+}
+
+.window .window-header .panel-tool a,
+.messager-window .window-header .panel-tool a{
+  vertical-align: middle;
+}
+
+/* Buttons in dialogs/messager */
+.dialog-button,
+.messager-button{
+  background: var(--gh-ui-bg2) !important;
+  border-top: 1px solid var(--gh-ui-border) !important;
+  padding: 10px 12px !important;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.dialog-button .l-btn,
+.messager-button .l-btn{
+  border-radius: 10px !important;
+  border: 1px solid var(--gh-ui-border) !important;
+  background: var(--gh-ui-bg) !important;
+  height: 34px !important;
+  padding: 0 10px;
+  box-shadow: none !important;
+}
+
+.dialog-button .l-btn .l-btn-text,
+.messager-button .l-btn .l-btn-text{
+  font-weight: 700;
+  color: var(--gh-ui-text) !important;
+  font-size: 13px;
+}
+
+.dialog-button .l-btn:hover,
+.messager-button .l-btn:hover{
+  border-color: var(--gh-ui-accent) !important;
+  transform: translateY(-1px);
+}
+.dialog-button .l-btn:active,
+.messager-button .l-btn:active{
+  transform: translateY(0);
+}
+
+/* Primary button: by convention we emphasize the LAST button */
+.dialog-button .l-btn:last-child,
+.messager-button .l-btn:last-child{
+  background: var(--gh-ui-accent) !important;
+  border-color: var(--gh-ui-accent) !important;
+}
+.dialog-button .l-btn:last-child .l-btn-text,
+.messager-button .l-btn:last-child .l-btn-text{
+  color: #ffffff !important;
+}
+.dialog-button .l-btn:last-child:hover,
+.messager-button .l-btn:last-child:hover{
+  background: var(--gh-ui-accent2) !important;
+  border-color: var(--gh-ui-accent2) !important;
+}
+
+/* Toast (messager show) */
+.messager-body .messager-info,
+.messager-body .messager-error,
+.messager-body .messager-question,
+.messager-body .messager-warning{
+  filter: saturate(1.05);
+}
+
+/* Improve form controls inside dialogs */
+.window .textbox,
+.messager-window .textbox,
+.window .combo,
+.messager-window .combo{
+  border-radius: 10px !important;
+}
+
+
+
+/* --- GitHub-style close icon for EasyUI window tool buttons --- */
+.window .panel-tool a.panel-tool-close,
+.messager-window .panel-tool a.panel-tool-close{
+  background-image: none !important;
+  background: transparent !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.window .panel-tool a.panel-tool-close::before,
+.messager-window .panel-tool a.panel-tool-close::before{
+  content: "×";
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--gh-ui-muted);
+}
+
+.window .panel-tool a.panel-tool-close:hover::before,
+.messager-window .panel-tool a.panel-tool-close:hover::before{
+  color: var(--gh-ui-text);
+}
+
+/* --- Toast footer (manual close button) --- */
+.gh-toast .messager-body{
+  padding-bottom: 14px !important;
+}
+
+.gh-toast-footer{
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.gh-toast-close{
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gh-ui-border);
+  background: var(--gh-ui-bg2);
+  color: var(--gh-ui-text);
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.gh-toast-close:hover{
+  border-color: var(--gh-ui-accent) !important;
+  background: var(--gh-ui-bg) !important;
+}
+
+.gh-toast-close:focus-visible{
+  outline: 3px solid rgba(9,105,218,.35);
+  outline-offset: 2px;
+}

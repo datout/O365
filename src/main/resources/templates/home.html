@@ -1,0 +1,444 @@
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>O365管理系统</title>
+	<link rel="stylesheet" id="easyuiTheme" href="jquery-easyui-1.9.14/themes/default/easyui.css" />
+	
+	<script>
+		// Apply theme early to reduce flash (uses localStorage key: o365_theme)
+		(function(){
+			var key = "o365_theme";
+			var stored = "";
+			try{ stored = localStorage.getItem(key) || ""; }catch(e){}
+			var mode = (stored === "dark" || stored === "light") ? stored : "";
+			if(!mode){
+				try{
+					mode = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+				}catch(e){ mode = "light"; }
+			}
+			document.documentElement.setAttribute("data-theme", mode);
+			var link = document.getElementById("easyuiTheme");
+			if(link){
+				link.href = (mode === "dark") ? "jquery-easyui-1.9.14/themes/black/easyui.css" : "jquery-easyui-1.9.14/themes/default/easyui.css";
+			}
+		})();
+	</script>
+<link rel="stylesheet" href="jquery-easyui-1.9.14/themes/icon.css" />
+	<script type="text/javascript" src="jquery-easyui-1.9.14/jquery.min.js" th:inline="none"></script>
+	<script type="text/javascript" src="jquery-easyui-1.9.14/jquery.easyui.min.js" th:inline="none"></script>
+	<script type="text/javascript" src="jquery-easyui-1.9.14/locale/easyui-lang-zh_CN.js" th:inline="none"></script>
+	<script type='text/javascript' src='bug-min.js'></script>
+	<link rel="stylesheet" href="/css/app.css" />
+	<!-- Modernize EasyUI dialogs/messager (GitHub-ish flat style) -->
+	<link rel="stylesheet" href="/css/easyui_github.css" />
+</head>
+<body class="easyui-layout" data-options="fit:true">
+<div data-options="region:'north',border:false" class="app-header">
+  <div class="app-brand">
+    <img src="logo.svg" alt="Microsoft" />
+    <div class="brand-text">
+      <div class="title">O365 管理系统</div>
+      <div class="subtitle">用户 · 许可证 · 邀请注册</div>
+    </div>
+  </div>
+
+  <div class="app-topnav">
+    <a href="javascript:void(0)" class="topnav-item" onclick="goHome()">首页</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('管理用户')">用户</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('查看许可证')">许可证</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('邀请注册')">邀请注册</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('Office配置')">Office配置</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('Office总览报告')">报告</a>
+    <a href="javascript:void(0)" class="topnav-item" onclick="addPanel('系统配置')">系统</a>
+    <a href="javascript:void(0)" class="topnav-item topnav-item-hot" onclick="addPanel('公开注册设置')">公开注册设置 <span class="topnav-badge">HOT</span></a>
+  </div>
+
+  <div class="app-topactions">
+    
+    <button type="button" id="themeToggle" class="theme-toggle" title="切换到深色" aria-label="切换到深色">
+      <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 14.2A8.5 8.5 0 0 1 9.8 3a7 7 0 1 0 11.2 11.2Z"/></svg>
+      <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Zm0-16a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1Zm0 18a1 1 0 0 1 1 1v1a1 1 0 1 1-2 0v-1a1 1 0 0 1 1-1ZM4.22 5.64a1 1 0 0 1 1.42 0l.71.7a1 1 0 1 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41Zm13.42 13.42a1 1 0 0 1 1.41 0l.71.7a1 1 0 0 1-1.42 1.42l-.7-.71a1 1 0 0 1 0-1.41ZM2 12a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1Zm18 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM5.64 19.78a1 1 0 0 1 0-1.42l.7-.71a1 1 0 1 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Zm13.42-13.42a1 1 0 0 1 0-1.41l.7-.71a1 1 0 0 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0Z"/></svg>
+    </button>
+<a href="https://github.com/datout/O365" target="_blank" class="easyui-linkbutton app-btn app-btn--ghost" data-options="plain:true,iconCls:'icon-od16'">GitHub</a>
+  </div>
+</div>
+
+	<div data-options="region:'west',split:true,title:'管理'" style="width:260px;padding:2px;">
+		<div id="aa" class="easyui-accordion" style="width:100%;height:220px;">
+		    <div title="用户"  style="overflow:auto">
+		    	<ul class="nav-menu">
+					<li data-options="iconCls:'icon-man'"><span class="tree-link" onclick="addPanel('管理用户')">管理用户</span></li>
+					<li data-options="iconCls:'icon-tip'"><span class="tree-link" onclick="addPanel('查看特权用户')">查看特权用户</span></li>
+					<li data-options="iconCls:'icon-add'"><span class="tree-link" onclick="addPanel('邀请注册')">邀请注册</span></li>
+				</ul>
+		    </div>
+		    <div title="许可证"  style="overflow:auto">
+		    	<ul class="nav-menu">
+					<li data-options="iconCls:'icon-tip'"><span class="tree-link" onclick="addPanel('查看许可证')">查看许可证</span></li>
+				</ul>
+		    </div>
+		    <div title="配置和报告" style="overflow:auto">
+		    	<ul class="nav-menu">
+					<li data-options="iconCls:'icon-tip'"><span class="tree-link tree-link-hot" onclick="addPanel('公开注册设置')">公开注册设置 <span class="menu-badge">HOT</span></span></li>
+					<li data-options="iconCls:'icon-od16'"><span class="tree-link" onclick="addPanel('Office配置')">Office配置</span></li>
+					<li data-options="iconCls:'icon-report'"><span class="tree-link" onclick="addPanel('Office总览报告')">Office总览报告</span></li>
+					<li data-options="iconCls:'icon-setting'"><span class="tree-link" onclick="addPanel('系统配置')">系统配置</span></li>
+				</ul>
+		    </div>
+		</div>
+	</div>
+	<div data-options="region:'south',border:false" class="app-footer"><div style="float:left">Powered by O365 <a href=javascript:showVersionInfo()>v1.0</a></div></div>
+	<div id="acc" class="easyui-tabs" data-options="region:'center'">
+		<div title="首页" style="padding:12px;overflow:auto">
+  <div class="dashboard">
+    <div class="dash-hero">
+      <div>
+        <div class="dash-title">欢迎来到 O365 管理系统</div>
+        <div class="dash-subtitle">用户 · 许可证 · 邀请注册 · 报告</div>
+      </div>
+      <div class="dash-quick">
+        <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-man'" onclick="addPanel('管理用户')">管理用户</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-tip'" onclick="addPanel('查看许可证')">查看许可证</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-add'" onclick="addPanel('邀请注册')">生成邀请码</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-od16'" onclick="addPanel('Office配置')">Office配置</a>
+        <a href="javascript:void(0)" class="easyui-linkbutton app-btn app-btn--hot" data-options="iconCls:'icon-tip'" onclick="addPanel('公开注册设置')">公开注册设置</a>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <span class="dash-icon icon-man"></span>
+          <div>
+            <div class="dash-card-title">用户管理</div>
+            <div class="dash-card-desc">创建、搜索、禁用、重置密码、批量操作</div>
+          </div>
+        </div>
+        <div class="dash-card-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn app-btn--primary" data-options="iconCls:'icon-search'" onclick="addPanel('管理用户')">进入</a>
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-tip'" onclick="addPanel('查看特权用户')">特权用户</a>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <span class="dash-icon icon-tip"></span>
+          <div>
+            <div class="dash-card-title">许可证</div>
+            <div class="dash-card-desc">订阅列表、消耗/剩余、分配与查询</div>
+          </div>
+        </div>
+        <div class="dash-card-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn app-btn--primary" data-options="iconCls:'icon-search'" onclick="addPanel('查看许可证')">查看许可证</a>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <span class="dash-icon icon-add"></span>
+          <div>
+            <div class="dash-card-title">邀请注册</div>
+            <div class="dash-card-desc">生成邀请码，自助注册并自动分配订阅</div>
+          </div>
+        </div>
+        <div class="dash-card-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn app-btn--primary" data-options="iconCls:'icon-add'" onclick="addPanel('邀请注册')">生成邀请码</a>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-head">
+          <span class="dash-icon icon-od16"></span>
+          <div>
+            <div class="dash-card-title">配置与报告</div>
+            <div class="dash-card-desc">Office 配置、总览报告、系统配置</div>
+          </div>
+        </div>
+        <div class="dash-card-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-od16'" onclick="addPanel('Office配置')">Office配置</a>
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-report'" onclick="addPanel('Office总览报告')">总览报告</a>
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-setting'" onclick="addPanel('系统配置')">系统配置</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-grid dash-grid-2">
+      <div class="dash-card">
+        <div class="dash-card-title">首次使用</div>
+        <ol class="dash-steps">
+          <li>前往 <b>配置与报告 → Office配置</b>，填写 <b>Tenant ID / App ID / App Secret</b>。</li>
+          <li>在 Azure 门户为该 App 授权（管理员同意）所需的 Graph <b>应用权限</b>。</li>
+          <li>可使用 <b>邀请注册</b> 生成邀请码，或直接在 <b>管理用户</b> 批量创建。</li>
+        </ol>
+        <div class="dash-card-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn app-btn--primary" data-options="iconCls:'icon-od16'" onclick="addPanel('Office配置')">去配置</a>
+          <a href="https://github.com/vanyouseea/msautocreate" target="_blank" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-help'">创建 APP 参考</a>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <div class="dash-card-title">需要的 Graph 应用权限</div>
+        <div class="muted" style="margin-bottom:8px;">缺少部分权限也能用，但对应功能会失败。</div>
+        <div class="perm-chips">
+          <span class="chip">Application.ReadWrite.All</span>
+          <span class="chip">Application.ReadWrite.OwnedBy</span>
+          <span class="chip">Directory.ReadWrite.All</span>
+          <span class="chip">RoleManagement.ReadWrite.Directory</span>
+          <span class="chip">User.ReadWrite.All</span>
+          <span class="chip">Reports.Read.All</span>
+          <span class="chip">Sites.FullControl.All</span>
+          <span class="chip">Domain.ReadWrite.All</span>
+          <span class="chip">User.ManageIdentities.All</span>
+        </div>
+
+        <div class="perm-actions">
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-save'" onclick="copyPerms()">复制权限清单</a>
+          <a href="javascript:void(0)" class="easyui-linkbutton app-btn" data-options="iconCls:'icon-tip'" onclick="togglePermDetail()">展开说明</a>
+        </div>
+
+        <div id="permDetail" class="perm-detail" style="display:none;">
+          <table class="perm-table" style="width:100%;">
+            <tr><td class="code">Application.ReadWrite.All</td><td>用于新增/更新应用（如添加证书/密钥）。</td></tr>
+            <tr><td class="code">Application.ReadWrite.OwnedBy</td><td>用于对本应用（OwnedBy）的新增/更新操作（如添加证书/密钥）。</td></tr>
+            <tr><td class="code">Directory.ReadWrite.All</td><td>用于订阅、域名、用户等目录对象管理。</td></tr>
+            <tr><td class="code">RoleManagement.ReadWrite.Directory</td><td>用于特权角色的管理。</td></tr>
+            <tr><td class="code">User.ManageIdentities.All</td><td>用于用户身份/认证信息相关管理。</td></tr>
+            <tr><td class="code">User.ReadWrite.All</td><td>用于用户的创建/更新/禁用/分配许可证等。</td></tr>
+            <tr><td class="code">Reports.Read.All</td><td>用于生成 OneDrive、Exchange 等详细报表。</td></tr>
+            <tr><td class="code">Sites.FullControl.All</td><td>用于检测/校验 SharePoint Online（SPO）。</td></tr>
+            <tr><td class="code">Domain.ReadWrite.All</td><td>用于域名相关操作。</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+		</div>
+	
+	<script type="text/javascript"  >
+		try { new BugController({'minBugs':1, 'maxBugs':1, 'mouseOver':'fly'}); } catch(e) { /* ignore */ }
+if(window.screen.width<960){
+		}
+		
+		function addPanel(name){
+			tab = $('#acc').tabs('getTab',name);
+			if(tab==null){
+				if(name=='管理用户'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/user.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}
+				else if(name=='查看许可证'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/license.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}
+				else if(name=='邀请注册'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/invite.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}
+				else if(name=='Office配置'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/config.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}				
+				else if(name=='系统配置'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/system.html',
+						closable: true
+					});
+				}
+				else if(name=='公开注册设置'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/noinvite.html',
+						closable: true
+					});
+				}
+				else if(name=='查看特权用户'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/privilegedUser.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}
+				else if(name=='Office总览报告'){
+					$('#acc').tabs('add',{
+						title: name,
+						href: 'tabs/apprpt.html',
+						//content: '<div style="padding:10px">Content</div>',
+						closable: true
+					});
+				}
+			}
+			else{
+				$('#acc').tabs('select',name);
+			}
+		}
+		
+		
+
+	function goHome(){
+		try{ $('#acc').tabs('select','首页'); }catch(e){}
+	}
+		function showVersionInfo(){
+			$.messager.alert('版本信息 v1.0',
+				'1. Docker 部署 + H2 持久化（默认 ./data/o365，建议映射宿主机目录）<br>'+
+				'2. 公开注册增强：开关/名额/已用/默认域名/固定订阅（支持多选 SKU）<br>'+
+				'3. 邀请码注册优化：隐藏域名选择、自动后缀等体验改进<br>'+
+				'4. 稳定性与提示优化：assignLicense 等错误输出与前端提示',
+				'');
+		}
+
+		function copyPerms(){
+			var text = [
+				'Microsoft Graph（Application permissions）：',
+				'- Application.ReadWrite.All',
+				'- Application.ReadWrite.OwnedBy',
+				'- Directory.ReadWrite.All',
+				'- RoleManagement.ReadWrite.Directory',
+				'- User.ManageIdentities.All',
+				'- User.ReadWrite.All',
+				'- Reports.Read.All',
+				'- Sites.FullControl.All',
+				'- Domain.ReadWrite.All'
+			].join('\n');
+			try{
+				navigator.clipboard.writeText(text).then(function(){
+					$.messager.show({title:'提示',msg:'✅ 已复制权限清单',timeout:1800,showType:'slide'});
+				}).catch(function(){
+					$.messager.alert('提示', '<pre style="white-space:pre-wrap;">'+text+'</pre>');
+				});
+			}catch(e){
+				$.messager.alert('提示', '<pre style="white-space:pre-wrap;">'+text+'</pre>');
+			}
+		}
+		function togglePermDetail(){
+			var el = document.getElementById('permDetail');
+			if(!el) return;
+			el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+		}
+		
+
+		// Theme toggle (light/dark): localStorage key = o365_theme (shared with /refer page)
+		(function(){
+			var key = "o365_theme";
+			var link = document.getElementById("easyuiTheme");
+			var mq = null;
+			try{ mq = window.matchMedia("(prefers-color-scheme: dark)"); }catch(e){}
+			function autoMode(){ return (mq && mq.matches) ? "dark" : "light"; }
+			function getStored(){ try{ return localStorage.getItem(key) || ""; }catch(e){ return ""; } }
+			function setStored(v){ try{ localStorage.setItem(key, v); }catch(e){} }
+			function isExplicit(v){ return (v === "dark" || v === "light"); }
+			function apply(mode){
+				var m = (mode === "dark") ? "dark" : "light";
+				document.documentElement.setAttribute("data-theme", m);
+				if(link){
+					link.setAttribute("href", m === "dark"
+						? "jquery-easyui-1.9.14/themes/black/easyui.css"
+						: "jquery-easyui-1.9.14/themes/default/easyui.css");
+				}
+				var btn = document.getElementById("themeToggle");
+				if(btn){
+					var next = (m === "dark") ? "light" : "dark";
+					btn.setAttribute("title", next === "dark" ? "切换到深色" : "切换到浅色");
+					btn.setAttribute("aria-label", btn.getAttribute("title"));
+				}
+			}
+			function init(){
+				var stored = getStored();
+				var mode = isExplicit(stored) ? stored : autoMode();
+				apply(mode);
+				var btn = document.getElementById("themeToggle");
+				if(btn){
+					btn.addEventListener("click", function(){
+						var current = document.documentElement.getAttribute("data-theme") || "light";
+						var next = (current === "dark") ? "light" : "dark";
+						setStored(next);
+						apply(next);
+					});
+				}
+				// Follow system if user never explicitly chose light/dark
+				if(!isExplicit(stored) && mq){
+					var handler = function(){
+						var s = getStored();
+						if(!isExplicit(s)){
+							apply(autoMode());
+						}
+					};
+					try{ mq.addEventListener("change", handler); }
+					catch(e){ try{ mq.addListener(handler); }catch(e2){} }
+				}
+			}
+			if(document.readyState === "loading"){
+				document.addEventListener("DOMContentLoaded", init);
+			}else{
+				init();
+			}
+		})();
+
+	
+
+		// Patch $.messager.show: keep toast for 60s and add a manual close button
+		(function(){
+			function ready(fn){
+				if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+				else fn();
+			}
+			ready(function(){
+				if(!window.jQuery || !$.messager || !$.messager.show) return;
+				var origShow = $.messager.show;
+				$.messager.show = function(opts){
+					try{
+						if(opts && typeof opts === 'object'){
+							var t = parseInt(opts.timeout, 10);
+							// Older code often uses 2s; extend to 60s unless caller explicitly wants longer
+							if(!t || t < 10000) opts.timeout = 60000;
+							if(!opts.showType) opts.showType = 'slide';
+						}
+						var before = $('.messager-window').length;
+						var ret = origShow.call($.messager, opts);
+						setTimeout(function(){
+							try{
+								var win = $('.messager-window').eq(before);
+								if(!win.length) win = $('.messager-window').last();
+								if(!win.length) return;
+								win.addClass('gh-toast');
+								var body = win.find('.messager-body');
+								if(!body.length) return;
+								if(body.find('.gh-toast-footer').length === 0){
+									var footer = $('<div class="gh-toast-footer"><button type="button" class="gh-toast-close">关闭</button></div>');
+									body.append(footer);
+									footer.on('click', '.gh-toast-close', function(){
+										try{ win.window('close'); }catch(e){}
+									});
+								}
+							}catch(e){}
+						}, 0);
+						return ret;
+					}catch(e){
+						return origShow.call($.messager, opts);
+					}
+				};
+			});
+		})();
+
+</script>
+</body>
+</html>
