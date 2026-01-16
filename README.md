@@ -32,8 +32,10 @@ docker run -d --name o365 \
 ```
 ---
 ## 预览
+- **首页** 
 ![alt 首页](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3811.png)
-![alt 首页](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3812.png)
+![alt 邀请注册](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3812.png)
+![alt 注册](https://github.com/datout/O365/blob/79aa493a34bcb82811d96dae08754e81e0189e75/pic/_901.png)
 ## Microsoft Graph 应用权限（Application permissions）
 
 为保证全部功能可用，建议授予并执行 Admin consent：
