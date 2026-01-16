@@ -29,3 +29,27 @@ docker run -d --name o365 \
   -v /root/o365-data:/data \
   --restart unless-stopped \
   o365:latest
+
+---
+
+## Microsoft Graph 应用权限（Application permissions）
+
+为保证全部功能可用，建议授予并执行 Admin consent：
+
+Application.ReadWrite.All
+
+Application.ReadWrite.OwnedBy
+
+Directory.ReadWrite.All
+
+RoleManagement.ReadWrite.Directory
+
+User.ManageIdentities.All
+
+User.ReadWrite.All
+
+Reports.Read.All
+
+Sites.FullControl.All
+
+Domain.ReadWrite.All
