@@ -3,7 +3,7 @@
 本项目基于上游二次开发：`https://github.com/vanyouseea/o365`  
 用于 Microsoft Graph 的 O365 多全局管理，并提供自助注册入口。
 
-## 相对上游的主要改动（概括）
+## 相对上游的主要改动
 - **Docker 部署 + H2 持久化**
   - 默认使用 H2：`./data/o365`（建议映射到宿主机目录持久化）
 - **公开注册（无邀请码）增强**
@@ -31,7 +31,9 @@ docker run -d --name o365 \
   o365:latest
 ```
 ---
-
+## 预览
+![alt 首页](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3811.png)
+![alt 首页](https://github.com/datout/O365/blob/e68402fd6d2e7b5a39b8c9b97705ae734a4b51dc/pic/_3812.png)
 ## Microsoft Graph 应用权限（Application permissions）
 
 为保证全部功能可用，建议授予并执行 Admin consent：
