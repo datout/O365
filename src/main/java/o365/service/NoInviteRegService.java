@@ -3,9 +3,13 @@ package o365.service;
 import java.util.Date;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +40,7 @@ public class NoInviteRegService {
     public static final String K_USED = "NO_INVITE_REG_USED";
     public static final String K_DOMAIN = "NO_INVITE_REG_DOMAIN";
     public static final String K_LICENSE = "NO_INVITE_REG_LICENSE";
+    public static final String K_IP_DAY_LIMIT = "NO_INVITE_REG_IP_DAY_LIMIT";
 
     @Autowired
     private TaMasterCdRepo tmc;
@@ -45,6 +50,9 @@ public class NoInviteRegService {
 
     @Autowired
     private GetDomainInfo gdi;
+
+    @Autowired
+    private NoInviteIpLimitService ipLimit;
 
     public boolean isEnabled() {
         return "Y".equalsIgnoreCase(getCd(K_ENABLE, "Y"));
@@ -105,6 +113,11 @@ public class NoInviteRegService {
         return s;
     }
 
+    public int getIpDayLimit() {
+        // 0 means unlimited
+        return parseInt(getCd(K_IP_DAY_LIMIT, "2"), 2);
+    }
+
     @CacheEvict(value = {"cacheSysInfo"}, allEntries = true)
     
     public String register(String mailNickname, String displayName, String password, String domainWithAt) {
@@ -134,10 +147,32 @@ public class NoInviteRegService {
 
         // create user
         String upn = mailNickname + "@" + chosenDomain;
+
+        // Per-IP daily limit (best-effort). Reserve a slot before calling Graph.
+        int ipDayLimit = getIpDayLimit();
+        String clientIp = getClientIpSafe();
+        boolean ipReserved = false;
+        boolean regOk = false;
+
         try {
+            if (ipDayLimit > 0 && clientIp != null && !clientIp.trim().isEmpty()) {
+                try {
+                    if (!ipLimit.tryAcquire(clientIp, ipDayLimit)) {
+                        return "同一IP当天最多注册" + ipDayLimit + "个";
+                    }
+                    ipReserved = true;
+                } catch (Exception ex) {
+                    // If limiter fails, do not block registration.
+                    ex.printStackTrace();
+                }
+            }
+
             // double-check quota (best-effort) just before creating
             used = getUsed();
             if (limit > 0 && used >= limit) {
+                if (ipReserved) {
+                    try { ipLimit.release(clientIp); } catch (Exception ignore) {}
+                }
                 return "公开注册名额已用完";
             }
 
@@ -148,6 +183,7 @@ public class NoInviteRegService {
             String msg = res.get("message");
 
             if ("0".equals(status)) {
+                regOk = true;
                 // increment used
                 TaMasterCd usedCd = getOrCreate(K_USED, String.valueOf(used), "公开注册已使用数量（系统自动累加）");
                 int newUsed = used + 1;
@@ -157,10 +193,120 @@ public class NoInviteRegService {
                 tmc.saveAndFlush(usedCd);
                 return "0|" + upn;
             }
+
+            if (ipReserved) {
+                try { ipLimit.release(clientIp); } catch (Exception ignore) {}
+            }
             return (msg != null && !msg.trim().isEmpty()) ? msg : "注册失败";
         } catch (Exception e) {
             e.printStackTrace();
+            // release reserved slot if any
+            if (ipReserved && !regOk) {
+                try { ipLimit.release(clientIp); } catch (Exception ignore) {}
+            }
             return "注册失败: " + e.toString();
+        }
+    }
+
+    /**
+     * Best-effort client IP extraction. If behind reverse proxy, prefer X-Forwarded-For.
+     */
+        private String getClientIpSafe() {
+            try {
+                if (RequestContextHolder.getRequestAttributes() == null) return "";
+                ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attrs == null) return "";
+                HttpServletRequest req = attrs.getRequest();
+                if (req == null) return "";
+
+                String remote = safeTrim(req.getRemoteAddr());
+                boolean trust = isTrustedProxy(remote);
+
+                String ip = "";
+                if (trust) {
+                    // Cloudflare (Tunnel) real client IP
+                    ip = firstNonEmptyHeader(req, "CF-Connecting-IP");
+                    if (ip.isEmpty()) ip = firstNonEmptyHeader(req, "True-Client-IP");
+                    if (ip.isEmpty()) ip = firstNonEmptyHeader(req, "CF-Connecting-IPv6");
+
+                    // Generic reverse proxy headers
+                    if (ip.isEmpty()) ip = firstNonEmptyHeader(req, "X-Forwarded-For");
+                    if (ip.isEmpty()) ip = firstNonEmptyHeader(req, "X-Real-IP");
+                }
+
+                if (ip.isEmpty()) ip = remote;
+                if (ip == null) ip = "";
+
+                // Header may be a list: client, proxy1, proxy2
+                if (ip.contains(",")) {
+                    ip = ip.split(",")[0].trim();
+                }
+
+                ip = normalizeIp(ip);
+                if (ip.isEmpty()) return "";
+                if ("unknown".equalsIgnoreCase(ip)) return "";
+                return ip;
+            } catch (Exception e) {
+                return "";
+            }
+        }
+
+        private boolean isTrustedProxy(String ip) {
+            if (ip == null) return false;
+            ip = ip.trim();
+            if (ip.isEmpty()) return false;
+
+            if ("127.0.0.1".equals(ip) || "::1".equals(ip)) return true;
+
+            // RFC1918 private ranges
+            if (ip.startsWith("10.")) return true;
+            if (ip.startsWith("192.168.")) return true;
+            if (ip.startsWith("172.")) {
+                String[] ps = ip.split("\.");
+                if (ps.length > 1) {
+                    try {
+                        int b = Integer.parseInt(ps[1]);
+                        if (b >= 16 && b <= 31) return true;
+                    } catch (Exception ignore) {}
+                }
+            }
+            return false;
+        }
+
+        private String normalizeIp(String ip) {
+            if (ip == null) return "";
+            ip = ip.trim();
+            if (ip.isEmpty()) return "";
+
+            // [IPv6]:port
+            if (ip.startsWith("[") && ip.contains("]")) {
+                int end = ip.indexOf(']');
+                if (end > 1) return ip.substring(1, end).trim();
+            }
+
+            // IPv4:port
+            if (ip.contains(".") && ip.contains(":") && ip.indexOf(":") == ip.lastIndexOf(":")) {
+                String[] parts = ip.split(":");
+                if (parts.length > 0) return parts[0].trim();
+            }
+
+            return ip;
+        }
+
+        private String safeTrim(String s) {
+            return (s == null) ? "" : s.trim();
+        }
+
+private String firstNonEmptyHeader(HttpServletRequest req, String name) {
+        try {
+            String v = req.getHeader(name);
+            if (v == null) return "";
+            v = v.trim();
+            if (v.isEmpty()) return "";
+            if ("unknown".equalsIgnoreCase(v)) return "";
+            return v;
+        } catch (Exception e) {
+            return "";
         }
     }
 

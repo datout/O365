@@ -27,6 +27,7 @@ public class NoInviteRegConfigInitializer {
         ensure(NoInviteRegService.K_USED, "0", "公开注册(无邀请码)已使用数量（系统自动累加）");
         ensure(NoInviteRegService.K_DOMAIN, "", "公开注册(无邀请码)默认域名(不含@)，例如 x86.cc.cd");
         ensure(NoInviteRegService.K_LICENSE, "", "公开注册(无邀请码)默认订阅skuId(GUID，可逗号分隔多选)，固定分配");
+        ensure(NoInviteRegService.K_IP_DAY_LIMIT, "2", "公开注册(无邀请码)同一IP每日最多注册数量(整数，0=不限)");
     }
 
     private void ensure(String key, String cd, String decode) {
