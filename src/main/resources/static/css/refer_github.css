@@ -375,3 +375,46 @@ input:focus{
 .gh-pw-toggle .eye-off{ display: none; }
 .gh-pw-toggle.is-on .eye{ display: none; }
 .gh-pw-toggle.is-on .eye-off{ display: block; }
+
+/* tip states */
+.gh-tip.error{
+  border-color: color-mix(in srgb, var(--danger) 70%, var(--border));
+  background: color-mix(in srgb, var(--danger) 10%, var(--card));
+  color: var(--text);
+}
+.gh-tip.ok{
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+  color: var(--text);
+}
+
+/* button submitting state */
+.btn:disabled,
+.btn[disabled]{
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+.btn.is-loading{
+  position: relative;
+  padding-right: 40px;
+}
+
+.btn.is-loading::after{
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: .9;
+  animation: ghspin .8s linear infinite;
+}
+
+@keyframes ghspin{
+  to{ transform: rotate(360deg); }
+}
