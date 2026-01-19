@@ -256,4 +256,77 @@ public class InviteTabCtrl {
 		return JSON.toJSONString(map);
 	}
 
+	// Public API: check invite code validity for registration UI.
+	// Returns JSON: {status:0|1, msg:"...", suffix:"@..."}
+	@ResponseBody
+	@RequestMapping(value = {"/public/checkInviteCd"}, method = RequestMethod.GET)
+	public String publicCheckInviteCd(@RequestParam(name="inviteCd") String inviteCd) {
+		HashMap<String, String> map = new HashMap<String, String>();
+		map.put("status", "1");
+		map.put("msg", "");
+		map.put("suffix", "");
+		try {
+			if (inviteCd == null) {
+				map.put("msg", "请输入邀请码");
+				return JSON.toJSONString(map);
+			}
+			inviteCd = inviteCd.trim();
+			if ("".equals(inviteCd)) {
+				map.put("msg", "请输入邀请码");
+				return JSON.toJSONString(map);
+			}
+
+			java.util.Optional<TaInviteInfo> opt = tii.findById(inviteCd);
+			if (!opt.isPresent()) {
+				map.put("msg", "无效的邀请码");
+				return JSON.toJSONString(map);
+			}
+			TaInviteInfo ti = opt.get();
+
+			// normalize suffix
+			String suffix = ti.getSuffix();
+			if (suffix == null) suffix = "";
+			suffix = suffix.trim();
+			if (!"".equals(suffix) && !suffix.startsWith("@")) suffix = "@" + suffix;
+
+			Date now = new Date();
+			Date startDt = ti.getStartDt();
+			Date endDt = ti.getEndDt();
+			if (startDt != null && startDt.after(now)) {
+				map.put("msg", "此邀请码尚未生效");
+				return JSON.toJSONString(map);
+			}
+			if (endDt != null && endDt.before(now)) {
+				map.put("msg", "此邀请码已过期");
+				return JSON.toJSONString(map);
+			}
+
+			String st = ti.getInviteStatus();
+			if (st == null) st = "";
+			if ("1".equals(st)) {
+				map.put("status", "0");
+				map.put("msg", "OK");
+				map.put("suffix", suffix);
+				return JSON.toJSONString(map);
+			}
+			if ("2".equals(st)) {
+				map.put("msg", "此邀请码正被使用中");
+			}
+			else if ("3".equals(st)) {
+				map.put("msg", "此邀请码已使用");
+			}
+			else if ("4".equals(st)) {
+				map.put("msg", "此邀请码使用出现错误");
+			}
+			else {
+				map.put("msg", "无效的邀请码状态");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			map.put("msg", "系统错误");
+		}
+		return JSON.toJSONString(map);
+	}
+
+
 }

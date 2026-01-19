@@ -30,7 +30,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http.authorizeRequests() // 授权配置
 				// 无需权限访问
 				.antMatchers("/h2/**","/*.png","/*.js", "/*.svg", "/jquery-easyui-1.9.14/**", "/css/**", "/js/**", "/img/**", "/images/**", "/pic/**", "/fonts/**", "/webfonts/**", "/*.css", "/*.woff", "/*.woff2", "/*.ttf", "/favicon.ico", "/", "/index.html", "/loginPage","/reg","/reg.html",
-						"/chkUserId","/callback","/refer","/refer.html","/createUserByInviteCd","/createUserNoInvite","/public/inviteSuffix", "/*.jpg").permitAll()
+						"/chkUserId","/callback","/refer","/refer.html","/createUserByInviteCd","/createUserNoInvite","/public/inviteSuffix","/public/checkInviteCd", "/*.jpg").permitAll()
 				// 其他接口需要登录后才能访问
 				.anyRequest().authenticated().and();
 	}

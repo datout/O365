@@ -418,3 +418,30 @@ input:focus{
 @keyframes ghspin{
   to{ transform: rotate(360deg); }
 }
+
+
+/* Invite code validation UI */
+
+.gh-inline > input[type="text"],
+.gh-inline > input[type="password"]{
+  width:auto !important;
+  flex:1 1 auto;
+}
+
+.btn.inline{
+  min-height:42px;
+  padding:10px 14px;
+  white-space:nowrap;
+}
+
+.gh-hint.ok{
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+  color: var(--text);
+}
+
+.gh-hint.error{
+  border-color: color-mix(in srgb, var(--danger) 70%, var(--border));
+  background: color-mix(in srgb, var(--danger) 10%, var(--card));
+  color: var(--text);
+}

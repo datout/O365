@@ -47,6 +47,16 @@
         使用邀请码创建账号。创建后请到 office.com 登录。
       </p>
 
+
+      <div class="gh-field" th:if="${!noInviteEnabled}">
+        <label for="inviteCd">邀请码</label>
+        <div class="gh-inline">
+          <input id="inviteCd" name="inviteCd" type="text" autocomplete="one-time-code" placeholder="请先输入邀请码">
+          <button class="btn primary inline" type="button" id="btnCheckInvite">验证</button>
+        </div>
+        <div class="gh-hint" id="inviteHint">请先输入邀请码并点击“验证”。</div>
+      </div>
+
       <div class="gh-field">
         <label for="displayName">用户名</label>
         <input id="displayName" name="displayName" type="text" autocomplete="name" placeholder="请输入用户名（支持中文/字母/数字）">
@@ -72,12 +82,6 @@
         </div>
 
         <div class="gh-hint" id="upnPreview">将创建邮箱：</div>
-      </div>
-
-
-      <div class="gh-field" th:if="${!noInviteEnabled}">
-        <label for="inviteCd">邀请码</label>
-        <input id="inviteCd" name="inviteCd" type="text" autocomplete="one-time-code" placeholder="请输入邀请码">
       </div>
 
       <div class="gh-field">
@@ -109,7 +113,7 @@
 
       <div class="gh-tip" id="tip">
         <span th:if="${noInviteEnabled}">请填写用户名、邮箱前缀、选择域名和密码后点击“注册”。</span>
-        <span th:unless="${noInviteEnabled}">请填写用户名、邮箱前缀、邀请码和密码后点击“注册”。请勿刷新或重复点击注册，否则可能会导致邀请码失效。</span>
+        <span th:unless="${noInviteEnabled}">请先输入邀请码并点击“验证”，通过后再填写用户名、邮箱前缀和密码后点击“注册”。（请勿刷新或重复点击注册，否则可能会导致邀请码失效）</span>
       </div>
     </div>
 
@@ -184,7 +188,7 @@
         $reset.prop('disabled', true);
       } else {
         var orig = $reg.data('origHtml') || '注册';
-        $reg.prop('disabled', false)
+        $reg.prop('disabled', isInviteLocked())
             .removeClass('is-loading')
             .html(orig);
         $reset.prop('disabled', false);
@@ -200,6 +204,7 @@
       $('#password2').val('');
       $('#displayName').trigger('focus');
       updatePreview();
+      if(!isNoInvite()){ resetInviteState(true); }
     }
 
     function isNoInvite(){
@@ -228,39 +233,109 @@
       }
     }
 
-    // Invite mode: query suffix decided by invite code for display
-    var _inviteTimer = null;
-    function fetchInviteSuffix(){
+
+    // Invite mode: validate invite code first, then unlock the rest of form
+    var _inviteOk = false;
+
+    function setInviteHint(msg, type){
+      var el = $('#inviteHint');
+      if(!el.length) return;
+      el.removeClass('ok error');
+      if(type === 'ok'){ el.addClass('ok'); }
+      if(type === 'error'){ el.addClass('error'); }
+      el.text(msg || '');
+    }
+
+    function setInviteSuffixVal(suffix){
+      if(isNoInvite()) return;
+      $('#inviteSuffix').text((suffix && suffix.trim()) ? suffix.trim() : '@');
+      updatePreview();
+    }
+
+    function isInviteLocked(){
+      return (!isNoInvite() && !_inviteOk);
+    }
+
+    function setInviteLocked(locked){
+      if(isNoInvite()) return;
+      $('#displayName').prop('disabled', locked);
+      $('#mailNickname').prop('disabled', locked);
+      $('#password').prop('disabled', locked);
+      $('#password2').prop('disabled', locked);
+      $('.gh-pw-toggle').prop('disabled', locked);
+      // btnReg also depends on submitting state
+      $('#btnReg').prop('disabled', locked || _submitting);
+    }
+
+    function setInviteChecking(on){
+      var $btn = $('#btnCheckInvite');
+      if(!$btn.length) return;
+      if(!$btn.data('origText')){ $btn.data('origText', $btn.text()); }
+      if(on){
+        $btn.prop('disabled', true).addClass('is-loading').text('验证中…');
+      } else {
+        $btn.prop('disabled', false).removeClass('is-loading').text($btn.data('origText') || '验证');
+      }
+    }
+
+    function resetInviteState(showHint){
+      if(isNoInvite()) return;
+      _inviteOk = false;
+      setInviteLocked(true);
+      setInviteSuffixVal('@');
+      if(showHint){
+        setInviteHint('请先输入邀请码并点击“验证”。', '');
+      } else {
+        setInviteHint('', '');
+      }
+      $('#inviteCd').trigger('focus');
+    }
+
+    function checkInvite(){
       if(isNoInvite()) return;
       var code = $.trim($('#inviteCd').val());
       if(!code){
-        $('#inviteSuffix').text('@');
-        updatePreview();
+        _inviteOk = false;
+        setInviteLocked(true);
+        setInviteSuffixVal('@');
+        setInviteHint('请输入邀请码', 'error');
+        $('#inviteCd').trigger('focus');
         return;
       }
+
+      setInviteChecking(true);
+      setInviteHint('正在验证邀请码…', '');
+
       $.ajax({
-        url: '/public/inviteSuffix',
+        url: '/public/checkInviteCd',
         type: 'get',
         data: { inviteCd: code },
+        complete: function(){
+          setInviteChecking(false);
+        },
         success: function(res){
           try{ if(typeof res === 'string') res = JSON.parse(res); }catch(e){}
           if(res && (res.status === '0' || res.status === 0) && res.suffix){
-            $('#inviteSuffix').text(res.suffix);
+            _inviteOk = true;
+            setInviteHint('✅ 邀请码有效', 'ok');
+            setInviteSuffixVal(res.suffix);
+            setInviteLocked(false);
+            $('#displayName').trigger('focus');
           } else {
-            $('#inviteSuffix').text('@');
+            _inviteOk = false;
+            var msg = (res && res.msg) ? res.msg : '邀请码无效';
+            setInviteHint('❌ ' + msg, 'error');
+            setInviteLocked(true);
+            setInviteSuffixVal('@');
           }
-          updatePreview();
         },
-        error: function(){
-          $('#inviteSuffix').text('@');
-          updatePreview();
+        error: function(xhr){
+          _inviteOk = false;
+          setInviteHint('❌ 验证失败：HTTP ' + xhr.status, 'error');
+          setInviteLocked(true);
+          setInviteSuffixVal('@');
         }
       });
-    }
-
-    function onInviteInput(){
-      clearTimeout(_inviteTimer);
-      _inviteTimer = setTimeout(fetchInviteSuffix, 250);
     }
 
     function reg(){
@@ -309,6 +384,11 @@
           $('#inviteCd').trigger('focus');
           return;
         }
+        if(!_inviteOk){
+          setTip('请先验证邀请码', 'error');
+          $('#inviteCd').trigger('focus');
+          return;
+        }
       }
 
       setSubmitting(true);
@@ -348,25 +428,29 @@
         if(noInvite){
 	          setTip('请填写用户名、邮箱前缀、选择域名和密码后点击“注册”。', '');
         } else {
-	          setTip('请填写用户名、邮箱前缀、邀请码和密码后点击“注册”。请勿刷新或重复点击注册，否则可能会导致邀请码失效。', '');
+	          setTip('请先输入邀请码并点击“验证”，通过后再填写用户名、邮箱前缀和密码后点击“注册”。（请勿刷新或重复点击注册，否则可能会导致邀请码失效）', '');
         }
       });
 
       $('#mailNickname').on('input', updatePreview);
       $('#domainSel').on('change', updatePreview);
-      $('#inviteCd').on('input', onInviteInput);
+      $('#inviteCd').on('input', function(){ resetInviteState(true); });
+      $('#btnCheckInvite').on('click', checkInvite);
 
       // Enter to submit
       $('#password2').on('keydown', function(e){
         if(e.key === 'Enter') reg();
       });
       $('#inviteCd').on('keydown', function(e){
-        if(e.key === 'Enter') reg();
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          checkInvite();
+        }
       });
 
       // init
       updatePreview();
-      fetchInviteSuffix();
+      if(!isNoInvite()){ resetInviteState(true); }
 
       // password visibility toggle (small eye button)
       $(document).on('mousedown', '.gh-pw-toggle', function(e){
@@ -378,6 +462,7 @@
         if(!target) return;
         var $input = $('#' + target);
         if(!$input.length) return;
+        if($input.prop('disabled')) return;
         var isPwd = ($input.attr('type') || 'password') === 'password';
         $input.attr('type', isPwd ? 'text' : 'password');
         $btn.toggleClass('is-on', isPwd);
