@@ -262,7 +262,7 @@ public class NoInviteRegService {
             if (ip.startsWith("10.")) return true;
             if (ip.startsWith("192.168.")) return true;
             if (ip.startsWith("172.")) {
-                String[] ps = ip.split("\.");
+                String[] ps = ip.split("\\.");
                 if (ps.length > 1) {
                     try {
                         int b = Integer.parseInt(ps[1]);
