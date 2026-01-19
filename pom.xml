@@ -75,7 +75,19 @@
 	</dependencies>
 
 	<build>
-		<plugins>
+		
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>static/jquery-easyui-1.9.14/demo/**</exclude>
+                    <exclude>static/jquery-easyui-1.9.14/demo-mobile/**</exclude>
+                    <exclude>static/jquery-easyui-1.9.14/src/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
+<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

@@ -5,6 +5,11 @@
 .vscode
 *.iml
 
+# Node / frontend tooling (if any)
+**/node_modules
+**/dist
+**/build
+
 # Maven
 **/target
 
@@ -21,3 +26,8 @@
 *.zip
 *.tar
 *.tar.gz
+
+# Drop EasyUI demos/sources from Docker build context (not used at runtime)
+src/main/resources/static/jquery-easyui-1.9.14/demo
+src/main/resources/static/jquery-easyui-1.9.14/demo-mobile
+src/main/resources/static/jquery-easyui-1.9.14/src
