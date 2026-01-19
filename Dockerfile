@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Build stage (Java 11)
+# Build stage (multi-arch)
 FROM maven:3.9.9-eclipse-temurin-11 AS build
 WORKDIR /app
 
@@ -11,12 +11,11 @@ RUN mvn -q -DskipTests dependency:go-offline
 COPY src ./src
 RUN mvn -q -DskipTests clean package
 
-# Runtime stage (Alpine is significantly smaller than Ubuntu-based variants)
-# If you run into libc-related issues, switch back to: eclipse-temurin:11-jre-jammy
-FROM eclipse-temurin:11-jre-alpine
-WORKDIR /app
+# Runtime stage
+# NOTE: alpine variant may not be available for linux/arm64; jammy supports multi-arch.
+FROM eclipse-temurin:11-jre-jammy
 
-COPY --from=build /app/target/*.jar /app/app.jar
+COPY --from=build /app/target/*.jar /usr/local/lib/1.jar
 
 EXPOSE 9527 8443
-ENTRYPOINT ["java","-XX:MaxRAMPercentage=75","-Dfile.encoding=UTF-8","-jar","/app/app.jar"]
+ENTRYPOINT ["java","-XX:MaxRAMPercentage=75","-Dfile.encoding=UTF-8","-jar","/usr/local/lib/1.jar"]
